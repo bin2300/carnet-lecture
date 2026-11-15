@@ -1,0 +1,71 @@
+# ⚠️ À MODIFIER avant le déploiement : repo, base_url
+backend:
+  name: github
+  repo: TON_PSEUDO_GITHUB/carnet-lecture   # <- ex. ghost-xyz/carnet-lecture
+  branch: main
+  base_url: https://carnet-lecture.pages.dev  # <- l'URL réelle de ton site Cloudflare Pages
+  auth_endpoint: api/auth                     # -> functions/api/auth.js
+
+# Les commits partent directement sur main : publication = commit = nouveau déploiement (~1 min).
+publish_mode: simple
+locale: fr
+show_preview_links: false
+site_url: https://carnet-lecture.pages.dev
+logo_url: ""
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: livres
+    label: Livres
+    label_singular: Livre
+    folder: src/content/books
+    extension: md
+    format: frontmatter
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}} — {{author}}"
+    fields:
+      - { label: Titre, name: title, widget: string }
+      - { label: Auteur, name: author, widget: string }
+      - { label: Nombre de pages total, name: totalPages, widget: number, value_type: int, min: 1 }
+      - { label: Pages lues (mets à jour ici ton compteur), name: pagesRead, widget: number, value_type: int, min: 0, default: 0 }
+      - label: Statut
+        name: status
+        widget: select
+        options:
+          - { label: En cours, value: en-cours }
+          - { label: Terminé, value: termine }
+          - { label: Abandonné, value: abandonne }
+        default: en-cours
+      - { label: Date de début, name: startDate, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { label: Date de fin, name: endDate, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+      - label: Langue de la fiche
+        name: lang
+        widget: select
+        options: [{ label: Français, value: fr }, { label: English, value: en }]
+        default: fr
+      - { label: Ce que ce livre m'a appris (court), name: learned, widget: text, required: false }
+      - { label: Citations marquantes, name: quotes, widget: list, field: { label: Citation, name: quote, widget: text }, required: false }
+      - label: Visuels Canva (PNG/JPG/WebP — compresse avant, idéalement < 1 Mo)
+        name: gallery
+        widget: list
+        required: false
+        fields:
+          - { label: Image, name: image, widget: image, media_library: { config: { multiple: false } } }
+          - { label: Description (accessibilité), name: alt, widget: string, required: false }
+      - { label: Note de lecture (Markdown), name: body, widget: markdown }
+
+  - name: reglages
+    label: Réglages
+    files:
+      - name: site
+        label: Compteur et site
+        file: src/data/site.json
+        format: json
+        fields:
+          - { label: Nom du site, name: siteName, widget: string }
+          - { label: Objectif (pages), name: goalPages, widget: number, value_type: int }
+          - { label: "Date de départ du compteur (AAAA-MM-JJ)", name: counterStartDate, widget: string, pattern: ["^\\d{4}-\\d{2}-\\d{2}$", "Format AAAA-MM-JJ"] }
+          - { label: Pages à ajouter au total (pages lues hors fiches livres), name: pagesOffset, widget: number, value_type: int, min: 0 }

@@ -1,0 +1,100 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { LANGS, ui, fmtDate, fmtNum, type Lang } from '../../../i18n';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  return LANGS.flatMap((lang) => books.map((book) => ({ params: { lang, slug: book.id }, props: { book } })));
+}
+
+const lang = Astro.params.lang as Lang;
+const { book } = Astro.props;
+const t = ui[lang];
+const { Content } = await render(book);
+const d = book.data;
+const url = new URL(`/${lang}/livres/${book.id}/`, Astro.site).toString();
+---
+
+<Base lang={lang} title={d.title} description={d.learned ?? `${d.title} — ${d.author}`} path={`livres/${book.id}/`}>
+  <article class="book">
+    <a class="back" href={`/${lang}/#bibliotheque`}>{t.back}</a>
+    <p class="eyebrow status">{t.status[d.status]}</p>
+    <h1>{d.title}</h1>
+    <p class="byline">{d.author}</p>
+
+    <div class="facts">
+      <span>{fmtNum(d.pagesRead, lang)} / {fmtNum(d.totalPages, lang)} {t.pages}</span>
+      <span>{t.started} {fmtDate(d.startDate, lang)}</span>
+      {d.endDate && <span>{t.finished} {fmtDate(d.endDate, lang)}</span>}
+      {d.lang !== lang && <span>{ui[d.lang].noteLang}</span>}
+    </div>
+
+    {d.learned && (
+      <div class="learned">
+        <p class="eyebrow">{t.learned}</p>
+        <p class="flush">{d.learned}</p>
+      </div>
+    )}
+
+    <div class="prose"><Content /></div>
+
+    {d.quotes.length > 0 && (
+      <section class="quotes">
+        <h2 class="section">{t.quotes}</h2>
+        {d.quotes.map((q) => <blockquote>{q}</blockquote>)}
+      </section>
+    )}
+
+    {d.gallery.length > 0 && (
+      <section>
+        <h2 class="section">{t.visuals}</h2>
+        <div class="gallery">
+          {d.gallery.map((g) => (
+            <button type="button" data-full={g.image} data-alt={g.alt} aria-label={g.alt || t.visuals}>
+              <img src={g.image} alt={g.alt} loading="lazy" decoding="async" />
+            </button>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <div class="actions">
+      <button type="button" class="btn" id="share" data-url={url} data-done={t.copied}>{t.share}</button>
+    </div>
+  </article>
+
+  <dialog class="lightbox" id="lightbox" aria-label={t.visuals}>
+    <img id="lightbox-img" alt="" />
+    <form method="dialog"><button class="btn" autofocus>{t.close}</button></form>
+  </dialog>
+</Base>
+
+<script>
+  const dlg = document.getElementById('lightbox') as HTMLDialogElement | null;
+  const big = document.getElementById('lightbox-img') as HTMLImageElement | null;
+  document.querySelectorAll<HTMLButtonElement>('.gallery button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (!dlg || !big) return;
+      big.src = btn.dataset.full ?? '';
+      big.alt = btn.dataset.alt ?? '';
+      dlg.showModal();
+    });
+  });
+  // Clic sur le fond = fermer
+  dlg?.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+
+  const share = document.getElementById('share') as HTMLButtonElement | null;
+  share?.addEventListener('click', async () => {
+    const original = share.textContent;
+    try {
+      await navigator.clipboard.writeText(share.dataset.url ?? location.href);
+      share.textContent = share.dataset.done ?? 'OK';
+      setTimeout(() => (share.textContent = original), 1800);
+    } catch {
+      window.prompt('URL', share.dataset.url ?? location.href);
+    }
+  });
+</script>

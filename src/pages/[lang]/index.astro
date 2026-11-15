@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import site from '../../data/site.json';
+import { getStats } from '../../lib/stats';
+import { LANGS, ui, fmtNum, fmtDate, type Lang } from '../../i18n';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const t = ui[lang];
+const s = await getStats();
+const pctText = s.pct.toLocaleString(lang === 'fr' ? 'fr-BE' : 'en-GB', {
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 4,
+});
+---
+
+<Base lang={lang}>
+  <section class="hero">
+    <p class="eyebrow">{t.tagline}</p>
+    <h1>{site.siteName}</h1>
+    <p class="counter">
+      {fmtNum(s.totalRead, lang)} <small>{t.on} {fmtNum(s.goal, lang)} {t.pagesRead}</small>
+    </p>
+    <progress class="bar" max={s.goal} value={s.totalRead} aria-label={`${pctText} %`}></progress>
+    <p class="pct">{pctText} %</p>
+
+    <div class="stats">
+      <div class="stat"><div class="v">{s.finished}</div><div class="l">{t.booksFinished}</div></div>
+      <div class="stat">
+        <div class="v">{s.current ? s.current.data.title : '—'}</div>
+        <div class="l">{t.reading}{s.current ? ` · ${s.current.data.author}` : ''}</div>
+      </div>
+      <div class="stat"><div class="v">{fmtNum(Math.round(s.perDay), lang)}</div><div class="l">{t.avgDay}</div></div>
+      <div class="stat"><div class="v">{fmtNum(Math.round(s.perMonth), lang)}</div><div class="l">{t.avgMonth}</div></div>
+    </div>
+  </section>
+
+  <h2 class="section" id="bibliotheque">{t.library}</h2>
+  {s.books.length === 0 ? (
+    <p class="empty">{t.empty}</p>
+  ) : (
+    <div class="grid">
+      {s.books.map((b) => (
+        <a class="card" href={`/${lang}/livres/${b.id}/`}>
+          <span class="badge">{t.status[b.data.status]}</span>
+          <h3>{b.data.title}</h3>
+          <p class="author">{b.data.author}</p>
+          <p class="meta">
+            {fmtNum(b.data.pagesRead, lang)} / {fmtNum(b.data.totalPages, lang)} {t.pages}<br />
+            {fmtDate(b.data.startDate, lang)}
+          </p>
+        </a>
+      ))}
+    </div>
+  )}
+</Base>

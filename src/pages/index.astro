@@ -1,0 +1,15 @@
+---
+// Racine : redirection statique vers le français (sans JS).
+const target = '/fr/';
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={target} />
+    <title>Redirection…</title>
+  </head>
+  <body><a href={target}>Continuer</a></body>
+</html>

@@ -1,0 +1,40 @@
+# En-têtes Cloudflare Pages. ATTENTION : les en-têtes de règles qui se recoupent s'additionnent.
+# La CSP stricte est donc déclarée route par route (/, /fr/*, /en/*) et NON sur /*,
+# pour que /admin/* puisse avoir sa propre CSP (plus permissive, nécessaire à Decap).
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Resource-Policy: same-origin
+
+/
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin
+
+/fr/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin
+
+/en/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin
+
+# Fichiers versionnés par hash : cache longue durée
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images uploadées : si un fichier malveillant (ex. SVG) était déposé, il ne peut rien exécuter
+/uploads/*
+  Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox
+  Cache-Control: public, max-age=86400
+
+# Admin (Decap CMS auto-hébergé). Pas de CDN tiers ; styles inline requis par la bibliothèque.
+# Le test en navigateur est à faire : si l'écran reste blanc, regarde la console (F12) et ajuste cette ligne.
+/admin/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.githubusercontent.com https://github.com; font-src 'self' data:; connect-src 'self' https://api.github.com https://github.com; frame-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+  Cross-Origin-Resource-Policy: same-origin
