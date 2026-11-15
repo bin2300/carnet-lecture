@@ -34,7 +34,7 @@
 # Admin (Decap CMS auto-hébergé). Pas de CDN tiers ; styles inline requis par la bibliothèque.
 # Le test en navigateur est à faire : si l'écran reste blanc, regarde la console (F12) et ajuste cette ligne.
 /admin/*
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.githubusercontent.com https://github.com; font-src 'self' data:; connect-src 'self' https://api.github.com https://github.com; frame-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.githubusercontent.com https://github.com; font-src 'self' data:; connect-src 'self' https://api.github.com https://github.com; frame-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
   Cross-Origin-Resource-Policy: same-origin
